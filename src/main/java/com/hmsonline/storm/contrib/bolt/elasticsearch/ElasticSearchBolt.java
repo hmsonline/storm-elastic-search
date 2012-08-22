@@ -20,7 +20,14 @@ import backtype.storm.tuple.Tuple;
 import com.hmsonline.storm.contrib.bolt.elasticsearch.mapper.TupleMapper;
 
 @SuppressWarnings("serial")
-public class ElasticSearchBolt extends BaseRichBolt {
+/**
+ * Abstract <code>IRichBolt</code> implementation capable of indexing data from tuples.
+ * Tuples are mapped into documents via a <code>TupleMapper</code>.
+ * 
+ * @author boneill42
+ * @author ptgoetz
+ * 
+ */public class ElasticSearchBolt extends BaseRichBolt {
     public static String ELASTIC_SEARCH_CLUSTER = "elastic.search.cluster";
     public static final String ELASTIC_SEARCH_HOST = "elastic.search.host";
     public static final String ELASTIC_SEARCH_PORT = "elastic.search.port";
@@ -51,14 +58,15 @@ public class ElasticSearchBolt extends BaseRichBolt {
         String id = null;
         String indexName = null;
         String type = null;
-        String json = null;
+        String document = null;
         try {
             id = this.tupleMapper.mapToId(tuple);
             indexName = this.tupleMapper.mapToIndex(tuple);
             type = this.tupleMapper.mapToType(tuple);
-            json = this.tupleMapper.mapToJson(tuple);
-            byte[] byteBuffer = json.getBytes();
+            document = this.tupleMapper.mapToDocument(tuple);
+            byte[] byteBuffer = document.getBytes();
             IndexResponse response = this.client.prepareIndex(indexName, type, id).setSource(byteBuffer).execute().actionGet();
+            LOG.debug("Indexed Document[ " + id + "], Type[" + type + "], Index[" + indexName + "], Version [" + response.getVersion() + "]");
             collector.ack(tuple);
         } catch (Exception e) {
             LOG.error("Unable to index Document[ " + id + "], Type[" + type + "], Index[" + indexName + "]", e);

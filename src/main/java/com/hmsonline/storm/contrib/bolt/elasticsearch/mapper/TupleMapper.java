@@ -5,12 +5,12 @@ import backtype.storm.tuple.Tuple;
 public interface TupleMapper {
     
     /**
-     * Given a <code>backtype.storm.tuple.Tuple</code> return JSON for indexing in ElasticSearch
+     * Given a <code>backtype.storm.tuple.Tuple</code> return JSON document for indexing in ElasticSearch
      * 
      * @param tuple
      * @return the document (json string)
      */
-    public String mapToJson(Tuple tuple);
+    public String mapToDocument(Tuple tuple);
 
     /**
      * Given a <code>backtype.storm.tuple.Tuple</code> return the index to use.
