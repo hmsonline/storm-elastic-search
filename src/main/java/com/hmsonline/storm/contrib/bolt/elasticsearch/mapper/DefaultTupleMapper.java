@@ -1,5 +1,7 @@
 package com.hmsonline.storm.contrib.bolt.elasticsearch.mapper;
 
+import java.io.Serializable;
+
 import backtype.storm.tuple.Tuple;
 
 /**
@@ -13,7 +15,8 @@ import backtype.storm.tuple.Tuple;
  * 
  * @author boneill42
  */
-public class DefaultTupleMapper implements TupleMapper {
+@SuppressWarnings("serial")
+public class DefaultTupleMapper implements TupleMapper, Serializable {
 
     @Override
     public String mapToDocument(Tuple tuple) {

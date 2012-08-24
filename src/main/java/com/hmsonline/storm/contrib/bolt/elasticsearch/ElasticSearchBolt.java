@@ -18,11 +18,20 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
 
 import com.hmsonline.storm.contrib.bolt.elasticsearch.mapper.TupleMapper;
+import static org.elasticsearch.node.NodeBuilder.*;
 
 @SuppressWarnings("serial")
 /**
  * Abstract <code>IRichBolt</code> implementation capable of indexing data from tuples.
  * Tuples are mapped into documents via a <code>TupleMapper</code>.
+ * 
+ * The bolt expects the following in the StormConfig:
+ *      elastic.search.cluster (ES cluster name)
+ *      elastic.search.host (ES host)
+ *      elastic.search.port (ES port)
+ *      
+ * Also, the bolt supports a local mode, which is handy for testing.  Setting the following
+ * config to <code>true</code> will cause the bolt to start a local elastic search.
  * 
  * @author boneill42
  * @author ptgoetz
@@ -31,11 +40,12 @@ import com.hmsonline.storm.contrib.bolt.elasticsearch.mapper.TupleMapper;
     public static String ELASTIC_SEARCH_CLUSTER = "elastic.search.cluster";
     public static final String ELASTIC_SEARCH_HOST = "elastic.search.host";
     public static final String ELASTIC_SEARCH_PORT = "elastic.search.port";
+    public static final String ELASTIC_LOCAL_MODE = "localMode";
 
     private static final Logger LOG = LoggerFactory.getLogger(ElasticSearchBolt.class);
     private OutputCollector collector;
     private Client client;
-    
+
     protected TupleMapper tupleMapper;
 
     public ElasticSearchBolt(TupleMapper tupleMapper) {
@@ -47,10 +57,17 @@ import com.hmsonline.storm.contrib.bolt.elasticsearch.mapper.TupleMapper;
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
         String elasticSearchHost = (String) stormConf.get(ELASTIC_SEARCH_HOST);
-        Integer elasticSearchPort = (Integer) stormConf.get(ELASTIC_SEARCH_PORT);
+        Integer elasticSearchPort = ((Long) stormConf.get(ELASTIC_SEARCH_PORT)).intValue();
         String elasticSearchCluster = (String) stormConf.get(ELASTIC_SEARCH_CLUSTER);
-        Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", elasticSearchCluster).build();
-        client = new TransportClient(settings).addTransportAddress(new InetSocketTransportAddress(elasticSearchHost, elasticSearchPort));
+        Boolean localMode = (Boolean) stormConf.get(ELASTIC_LOCAL_MODE);
+
+        if (localMode != null && localMode) {
+            client = nodeBuilder().local(true).node().client();            
+        } else {
+            Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", elasticSearchCluster).build();
+            client = new TransportClient(settings).addTransportAddress(new InetSocketTransportAddress(
+                    elasticSearchHost, elasticSearchPort));
+        }
     }
 
     @Override
@@ -65,8 +82,10 @@ import com.hmsonline.storm.contrib.bolt.elasticsearch.mapper.TupleMapper;
             type = this.tupleMapper.mapToType(tuple);
             document = this.tupleMapper.mapToDocument(tuple);
             byte[] byteBuffer = document.getBytes();
-            IndexResponse response = this.client.prepareIndex(indexName, type, id).setSource(byteBuffer).execute().actionGet();
-            LOG.debug("Indexed Document[ " + id + "], Type[" + type + "], Index[" + indexName + "], Version [" + response.getVersion() + "]");
+            IndexResponse response = this.client.prepareIndex(indexName, type, id).setSource(byteBuffer).execute()
+                    .actionGet();
+            LOG.debug("Indexed Document[ " + id + "], Type[" + type + "], Index[" + indexName + "], Version ["
+                    + response.getVersion() + "]");
             collector.ack(tuple);
         } catch (Exception e) {
             LOG.error("Unable to index Document[ " + id + "], Type[" + type + "], Index[" + indexName + "]", e);
@@ -76,8 +95,7 @@ import com.hmsonline.storm.contrib.bolt.elasticsearch.mapper.TupleMapper;
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        // TODO Auto-generated method stub
-
+        // Not generating any output from this bolt.
     }
 
 }
