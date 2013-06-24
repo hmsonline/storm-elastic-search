@@ -57,7 +57,7 @@ import static org.elasticsearch.node.NodeBuilder.*;
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
         String elasticSearchHost = (String) stormConf.get(ELASTIC_SEARCH_HOST);
-        Integer elasticSearchPort = ((Long) stormConf.get(ELASTIC_SEARCH_PORT)).intValue();
+        Integer elasticSearchPort = (Integer) stormConf.get(ELASTIC_SEARCH_PORT);
         String elasticSearchCluster = (String) stormConf.get(ELASTIC_SEARCH_CLUSTER);
         Boolean localMode = (Boolean) stormConf.get(ELASTIC_LOCAL_MODE);
 
@@ -75,7 +75,7 @@ import static org.elasticsearch.node.NodeBuilder.*;
         String id = null;
         String indexName = null;
         String type = null;
-        String document = null;
+        String document;
         try {
             id = this.tupleMapper.mapToId(tuple);
             indexName = this.tupleMapper.mapToIndex(tuple);

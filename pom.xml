@@ -13,9 +13,12 @@
 			<url>http://clojars.org/repo</url>
 		</repository>
 	</repositories>
+
 	<properties>
 		<elastic.search.version>0.19.8</elastic.search.version>
-		<storm.version>0.8.0</storm.version>
+		<storm.version>0.8.2</storm.version>
+        <mokito-all.version>1.9.5</mokito-all.version>
+        <junit.version>4.10</junit.version>
 	</properties>
 
 	<dependencies>
@@ -32,11 +35,17 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.10</version>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
-
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>${mokito-all.version}</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
