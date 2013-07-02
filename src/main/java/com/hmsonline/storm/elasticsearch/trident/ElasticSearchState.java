@@ -11,7 +11,6 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
-import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
@@ -90,9 +89,6 @@ public class ElasticSearchState implements State {
         try {
             BulkResponse bulkResponse = bulkRequest.execute().actionGet();
             if (bulkResponse.hasFailures()) {
-                for (BulkItemResponse res : bulkResponse) {
-                    System.out.println(res);
-                }
                 // Index failed. Retry!
                 throw new FailedException("Cannot create index via ES: " + bulkResponse.buildFailureMessage());
             }
