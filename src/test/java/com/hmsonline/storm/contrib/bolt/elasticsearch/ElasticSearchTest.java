@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.node.Node;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import backtype.storm.Config;
@@ -17,6 +18,7 @@ import backtype.storm.tuple.TupleImpl;
 
 import com.hmsonline.storm.contrib.bolt.elasticsearch.mapper.DefaultTupleMapper;
 
+@Ignore
 public class ElasticSearchTest {
 
     @Test

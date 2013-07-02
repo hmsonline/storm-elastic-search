@@ -18,6 +18,8 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
 
 import com.hmsonline.storm.contrib.bolt.elasticsearch.mapper.TupleMapper;
+import com.hmsonline.storm.elasticsearch.StormElasticSearchConstants;
+
 import static org.elasticsearch.node.NodeBuilder.*;
 
 @SuppressWarnings("serial")
@@ -37,9 +39,6 @@ import static org.elasticsearch.node.NodeBuilder.*;
  * @author ptgoetz
  * 
  */public class ElasticSearchBolt extends BaseRichBolt {
-    public static String ELASTIC_SEARCH_CLUSTER = "elastic.search.cluster";
-    public static final String ELASTIC_SEARCH_HOST = "elastic.search.host";
-    public static final String ELASTIC_SEARCH_PORT = "elastic.search.port";
     public static final String ELASTIC_LOCAL_MODE = "localMode";
 
     private static final Logger LOG = LoggerFactory.getLogger(ElasticSearchBolt.class);
@@ -56,9 +55,9 @@ import static org.elasticsearch.node.NodeBuilder.*;
     @SuppressWarnings("rawtypes")
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
-        String elasticSearchHost = (String) stormConf.get(ELASTIC_SEARCH_HOST);
-        Integer elasticSearchPort = ((Long) stormConf.get(ELASTIC_SEARCH_PORT)).intValue();
-        String elasticSearchCluster = (String) stormConf.get(ELASTIC_SEARCH_CLUSTER);
+        String elasticSearchHost = (String) stormConf.get(StormElasticSearchConstants.ES_HOST);
+        Integer elasticSearchPort = ((Long) stormConf.get(StormElasticSearchConstants.ES_PORT)).intValue();
+        String elasticSearchCluster = (String) stormConf.get(StormElasticSearchConstants.ES_CLUSTER_NAME);
         Boolean localMode = (Boolean) stormConf.get(ELASTIC_LOCAL_MODE);
 
         if (localMode != null && localMode) {
