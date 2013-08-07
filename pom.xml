@@ -6,6 +6,25 @@
 	<version>0.1.0-SNAPSHOT</version>
 	<name>Storm Elastic Search Support</name>
 	<description>Storm Elastic Search Support</description>
+	
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+	
+	<licenses>
+		<license>
+			<name>Eclipse Public License - v 1.0</name>
+			<url>http://www.eclipse.org/legal/epl-v10.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<connection>scm:git:git@github.com:hmsonline/storm-elastic-search.git</connection>
+		<developerConnection>scm:git:git@github.com:hmsonline/storm-elastic-search.git</developerConnection>
+		<url>:git@github.com:hmsonline/storm-elastic-search.git</url>
+	</scm>
 
 	<repositories>
 		<repository>
