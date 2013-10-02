@@ -39,7 +39,12 @@ public class ElasticSearchState implements State {
         LOGGER.debug("Initialize ElasticSearchState");
         String clusterName = (String) config.get(StormElasticSearchConstants.ES_CLUSTER_NAME);
         String host = (String) config.get(StormElasticSearchConstants.ES_HOST);
-        Integer port = (Integer) config.get(StormElasticSearchConstants.ES_PORT);
+        Integer port = 9300;
+        try {
+            port = Integer.parseInt(config.get(StormElasticSearchConstants.ES_PORT).toString());
+        } catch (Exception e) {
+            LOGGER.warn("Cannot get elastic search port from config file. Use default value: 9300");
+        }
 
         Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", clusterName).build();
         client = new TransportClient(settings).addTransportAddress(new InetSocketTransportAddress(host, port));
