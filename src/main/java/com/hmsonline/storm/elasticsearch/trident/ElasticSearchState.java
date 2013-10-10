@@ -33,6 +33,7 @@ public class ElasticSearchState implements State {
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchState.class);
 
     private Client client;
+    private Set<String> existingIndex = new HashSet<String>();
 
     @SuppressWarnings("rawtypes")
     public ElasticSearchState(Map config) {
@@ -69,7 +70,6 @@ public class ElasticSearchState implements State {
     public void createIndices(TridentElasticSearchMapper mapper, List<TridentTuple> tuples) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
 
-        Set<String> existingIndex = new HashSet<String>();
         for (TridentTuple tuple : tuples) {
             String indexName = mapper.mapToIndex(tuple);
             String type = mapper.mapToType(tuple);
@@ -77,12 +77,14 @@ public class ElasticSearchState implements State {
             Map<String, Object> data = mapper.mapToData(tuple);
             String parentId = mapper.mapToParentId(tuple);
 
+            // TODO: this is not efficient. Creating indices should happen at
+            // deployment phase.
             if (!existingIndex.contains(indexName)
                     && !client.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet().isExists()) {
                 createIndex(bulkRequest, indexName, mapper.mapToIndexSettings(tuple));
                 createMapping(bulkRequest, indexName, type, mapper.mapToMappingSettings(tuple));
-                existingIndex.add(indexName);
             }
+            existingIndex.add(indexName);
             if (StringUtils.isBlank(parentId)) {
                 bulkRequest.add(client.prepareIndex(indexName, type, key).setSource(data));
             } else {
@@ -94,8 +96,8 @@ public class ElasticSearchState implements State {
         try {
             BulkResponse bulkResponse = bulkRequest.execute().actionGet();
             if (bulkResponse.hasFailures()) {
-                // Index failed. Retry!
-                throw new FailedException("Cannot create index via ES: " + bulkResponse.buildFailureMessage());
+                //TODO index failed. Figure out a better way to determine when to retry this message
+                LOGGER.error("Cannot execute bulk request: " + bulkResponse.buildFailureMessage());
             }
         } catch (ElasticSearchException e) {
             StormElasticSearchUtils.handleElasticSearchException(getClass(), e);
