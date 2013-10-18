@@ -52,8 +52,6 @@ public class ElasticSearchFunctionTest extends StormElasticSearchAbstractTest {
         json.put("message", "trying out Elastic Search");
         Mockito.when(mapper.mapToData(Mockito.any(TridentTuple.class))).thenReturn(json);
         Mockito.when(mapper.mapToParentId(Mockito.any(TridentTuple.class))).thenReturn(null);
-        Mockito.when(mapper.mapToIndexSettings(Mockito.any(TridentTuple.class))).thenReturn(null);
-        Mockito.when(mapper.mapToMappingSettings(Mockito.any(TridentTuple.class))).thenReturn(null);
         return mapper;
     }
 

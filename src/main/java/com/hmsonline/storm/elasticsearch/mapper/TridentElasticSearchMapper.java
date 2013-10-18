@@ -60,8 +60,10 @@ public interface TridentElasticSearchMapper extends Serializable {
      */
     public Map<String, Object> mapToData(TridentTuple tuple);
 
+    @Deprecated
     public Settings mapToIndexSettings(TridentTuple tuple);
 
     @SuppressWarnings("rawtypes")
+    @Deprecated
     public Map mapToMappingSettings(TridentTuple tuple);
 }
