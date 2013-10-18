@@ -3,14 +3,11 @@
 //
 package com.hmsonline.storm.elasticsearch.trident;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.ElasticSearchException;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
@@ -23,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import storm.trident.state.State;
 import storm.trident.tuple.TridentTuple;
-import backtype.storm.topology.FailedException;
 
 import com.hmsonline.storm.elasticsearch.StormElasticSearchConstants;
 import com.hmsonline.storm.elasticsearch.StormElasticSearchUtils;
@@ -33,7 +29,6 @@ public class ElasticSearchState implements State {
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchState.class);
 
     private Client client;
-    private Set<String> existingIndex = new HashSet<String>();
 
     @SuppressWarnings("rawtypes")
     public ElasticSearchState(Map config) {
@@ -77,14 +72,6 @@ public class ElasticSearchState implements State {
             Map<String, Object> data = mapper.mapToData(tuple);
             String parentId = mapper.mapToParentId(tuple);
 
-            // TODO: this is not efficient. Creating indices should happen at
-            // deployment phase.
-            if (!existingIndex.contains(indexName)
-                    && !client.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet().isExists()) {
-                createIndex(bulkRequest, indexName, mapper.mapToIndexSettings(tuple));
-                createMapping(bulkRequest, indexName, type, mapper.mapToMappingSettings(tuple));
-            }
-            existingIndex.add(indexName);
             if (StringUtils.isBlank(parentId)) {
                 bulkRequest.add(client.prepareIndex(indexName, type, key).setSource(data));
             } else {
@@ -98,30 +85,6 @@ public class ElasticSearchState implements State {
             if (bulkResponse.hasFailures()) {
                 //TODO index failed. Figure out a better way to determine when to retry this message
                 LOGGER.error("Cannot execute bulk request: " + bulkResponse.buildFailureMessage());
-            }
-        } catch (ElasticSearchException e) {
-            StormElasticSearchUtils.handleElasticSearchException(getClass(), e);
-        }
-    }
-
-    private void createIndex(BulkRequestBuilder bulkRequest, String indexName, Settings indicesSettings) {
-        try {
-            if (indicesSettings != null) {
-                client.admin().indices().prepareCreate(indexName).setSettings(indicesSettings).execute().actionGet();
-            } else {
-                client.admin().indices().prepareCreate(indexName).execute().actionGet();
-            }
-        } catch (ElasticSearchException e) {
-            StormElasticSearchUtils.handleElasticSearchException(getClass(), e);
-        }
-    }
-
-    @SuppressWarnings("rawtypes")
-    private void createMapping(BulkRequestBuilder bulkRequest, String indexName, String indexType, Map json) {
-        try {
-            if (json != null) {
-                client.admin().indices().preparePutMapping(indexName).setType(indexType).setSource(json).execute()
-                        .actionGet();
             }
         } catch (ElasticSearchException e) {
             StormElasticSearchUtils.handleElasticSearchException(getClass(), e);
