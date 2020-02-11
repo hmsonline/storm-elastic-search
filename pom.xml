@@ -28,11 +28,11 @@
 	<repositories>
 		<repository>
 			<id>clojars.org</id>
-			<url>http://clojars.org/repo</url>
+			<url>https://clojars.org/repo</url>
 		</repository>
 		<repository>
 			<id>maven.org</id>
-			<url>http://repo1.maven.org/maven2</url>
+			<url>https://repo1.maven.org/maven2</url>
 		</repository>
 	</repositories>
 	<properties>
